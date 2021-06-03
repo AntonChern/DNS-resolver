@@ -38,7 +38,7 @@ def get_response(query):
                 if server.rdtype == dns.rdatatype.NS:
                     cur_server = server
                     break
-            if cur_servers is None or cur_server is None:
+            if cur_server is None:
                 break
             cur_query = dns.message.make_query(cur_server.to_text(), dns.rdatatype.A)
             cur_response = dns.query.udp(cur_query, "8.8.4.4")
