@@ -30,10 +30,17 @@ def get_response(query):
                 break
 
         if server_record is None:
-            cur_servers = response.get_rrset(response.authority, query.question[0].name, dns.rdataclass.IN, dns.rdatatype.NS)
-            if (cur_servers is None):
+            if not response.authority:
                 break
-            cur_query = dns.message.make_query(cur_servers[0].to_text(), dns.rdatatype.A)
+            cur_servers = response.authority[0]
+            cur_server = None
+            for server in cur_servers:
+                if server.rdtype == dns.rdatatype.NS:
+                    cur_server = server
+                    break
+            if cur_servers is None or cur_server is None:
+                break
+            cur_query = dns.message.make_query(cur_server.to_text(), dns.rdatatype.A)
             cur_response = dns.query.udp(cur_query, "8.8.4.4")
             for record in cur_response.answer:
                 if record.rdtype == dns.rdatatype.A:
