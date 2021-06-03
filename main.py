@@ -66,13 +66,14 @@ if __name__ == "__main__":
         if cache.__contains__(domain) and cache[domain][0] > cur_time:
             r_time, response = cache[domain]
             new_response = dns.message.from_text(response)
-            new_response.flags = dns.flags.QR | dns.flags.RD
+            new_response.flags = dns.flags.QR
             new_response.id = query.id
             new_response.answer[0].ttl = int(r_time - cur_time)
             cache[domain] = (r_time, new_response.to_text())
             dns.query.send_udp(sock, new_response, address)
         else:
             response = get_response(query)
+            print(response)
             if response.answer:
                 cache[domain] = (cur_time + time_to_live, response.to_text())
                 dns.query.send_udp(sock, response, address)
