@@ -1,6 +1,5 @@
 import dns.query
 import socket
-import json
 
 time_to_live = 3600.
 
@@ -8,6 +7,9 @@ root_server = "198.41.0.4"
 
 port = 53
 ip = "127.0.0.1"
+
+cache4 = dict()
+cache6 = dict()
 
 def refresh(cache, time):
     new_cache = dict()
@@ -50,12 +52,9 @@ if __name__ == "__main__":
         query, cur_time, address = dns.query.receive_udp(sock)
 
         if query.question[0].rdtype == dns.rdatatype.A:
-            file = open("cache4.txt", 'r')
-            cache = json.loads(file.read())
+            cache = cache4
         if query.question[0].rdtype == dns.rdatatype.AAAA:
-            file = open("cache6.txt", 'r')
-            cache = json.loads(file.read())
-        file.close()
+            cache = cache6
         domain = query.question[0].name.to_text()
         if cache.__contains__(domain) and cache[domain][0] > cur_time:
             r_time, response = cache[domain]
@@ -71,9 +70,3 @@ if __name__ == "__main__":
                 cache[domain] = (cur_time + time_to_live, response.to_text())
                 dns.query.send_udp(sock, response, address)
         cache = refresh(cache, cur_time)
-        if query.question[0].rdtype == dns.rdatatype.A:
-            file = open("cache4.txt", 'w')
-        if query.question[0].rdtype == dns.rdatatype.AAAA:
-            file = open("cache6.txt", 'w')
-        file.write(json.dumps(cache))
-        file.close()
